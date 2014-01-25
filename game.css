@@ -27,6 +27,10 @@
   background-color: yellow;
 }
 
+.tile.tileType5 {
+  background-color: purple;
+}
+
 .tile.selected {
   border-color: black;
 }
