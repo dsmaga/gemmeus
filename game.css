@@ -1,0 +1,32 @@
+.column {
+  width: 72px;
+  float: left;
+  background-color: #eaeaea;
+}
+
+.tile {
+  height: 64px;
+  width: 64px;
+  margin: 2px;
+  border: 2px solid white;
+}
+
+.tile.tileType1 {
+  background-color: red;
+}
+
+.tile.tileType2 {
+  background-color: green;
+}
+
+.tile.tileType3 {
+  background-color: blue;
+}
+
+.tile.tileType4 {
+  background-color: yellow;
+}
+
+.tile.selected {
+  border-color: black;
+}
