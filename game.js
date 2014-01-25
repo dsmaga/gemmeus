@@ -2,6 +2,15 @@ function Game(n, types) {
 
   var _game = this
 
+  function Column() {
+    var _column = this
+
+    this.tiles = ko.observableArray()
+    this.offsetClass = ko.computed(function() {
+      return 'offset' + (n - _column.tiles().length)
+    })
+  }
+
   function Tile(type) {
     var _tile = this
 
@@ -14,12 +23,12 @@ function Game(n, types) {
   }
 
   this.columns = _.range(n).map(function() {
-    return ko.observableArray()
+    return new Column
   })
 
   this.fillGrid = function fillGrid() {
-    this.columns.forEach(function(col) {
-      col(_.range(n).map(function() {
+    this.columns.forEach(function(column) {
+      column.tiles(_.range(n).map(function() {
         return new Tile(_.random(1, types))
       }))
     })
@@ -41,15 +50,15 @@ function Game(n, types) {
     function findTileCoords(tile) {
       var i, j
       for(i = 0; i < n; i++) {
-        j = _game.columns[i].indexOf(tile)
+        j = _game.columns[i].tiles.indexOf(tile)
         if(j !== -1) break
       }
     return [i, j]
     }
     var tile1Coords = findTileCoords(tile1)
       , tile2Coords = findTileCoords(tile2)
-    _game.columns[tile1Coords[0]].splice(tile1Coords[1], 1, tile2)
-    _game.columns[tile2Coords[0]].splice(tile2Coords[1], 1, tile1)
+    _game.columns[tile1Coords[0]].tiles.splice(tile1Coords[1], 1, tile2)
+    _game.columns[tile2Coords[0]].tiles.splice(tile2Coords[1], 1, tile1)
   }
 
   this.fillGrid()
@@ -61,3 +70,4 @@ var game = new Game(10, 5)
 $(function() {
   ko.applyBindings(game)
 })
+

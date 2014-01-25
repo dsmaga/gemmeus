@@ -1,7 +1,7 @@
 .column {
   width: 72px;
+  min-height: 1px;
   float: left;
-  background-color: #eaeaea;
 }
 
 .tile {
@@ -34,3 +34,13 @@
 .tile.selected {
   border-color: black;
 }
+
+.offset1 { margin-top: 66px; }
+.offset2 { margin-top: 132px; }
+.offset3 { margin-top: 198px; }
+.offset4 { margin-top: 264px; }
+.offset5 { margin-top: 330px; }
+.offset6 { margin-top: 396px; }
+.offset7 { margin-top: 462px; }
+.offset8 { margin-top: 528px; }
+.offset9 { margin-top: 594px; }

@@ -15,7 +15,7 @@
     <div class='container'>
       <h1>Game!</h1>
       <div id='game-grid' data-bind='foreach: columns'>
-        <div class='column' data-bind='foreach: $data'>
+        <div class='column' data-bind='foreach: tiles, css: offsetClass'>
           <div class='tile' data-bind='css: tileClass, click: $root.select'></div>
         </div>
       </div>
