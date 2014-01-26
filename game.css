@@ -31,6 +31,14 @@
   background-color: purple;
 }
 
+.tile.tileType6 {
+  background-color: orange;
+}
+
+.tile.tileType7 {
+  background-color: aqua;
+}
+
 .tile.selected {
   border-color: black;
 }
