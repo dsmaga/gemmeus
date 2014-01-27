@@ -2,6 +2,19 @@ function Game(n, types) {
 
   var _game = this
 
+  function Tile(x, y, type) {
+    var _tile = this
+
+    this.x = x
+    this.y = y
+    this.type = type
+    this.selected = ko.observable(false)
+
+    this.tileClass = ko.computed(function() {
+      return 'tileType' + type + (_tile.selected() ? ' selected' : '')
+    })
+  }
+
   function Column() {
     var _column = this
 
@@ -19,10 +32,11 @@ function Game(n, types) {
     var _grid = this
 
     this.columns = _.range(n).map(function(){return new Column})
+    this.selectedTile = null
 
-    this.getTile = function(i, j) {
-      if(i < 0 || i >= n) return void(0)
-      return _grid.columns[i].tiles()[j]
+    this.getTile = function(x, y) {
+      if(x < 0 || x >= n) return void(0)
+      return _grid.columns[x].tiles()[y]
     }
 
     this.horizontalRunCount = function(i, j, type) {
@@ -38,7 +52,7 @@ function Game(n, types) {
         else if(tile.type !== type) break
         count++
       }
-      for(x = i - 1; x > 0; x--) {
+      for(x = i - 1; x >= 0; x--) {
         tile = _grid.getTile(x, j)
         if(!tile) break
         else if(tile.type !== type) break
@@ -60,7 +74,7 @@ function Game(n, types) {
         else if(tile.type !== type) break
         count++
       }
-      for(y = j - 1; y > 0; y--) {
+      for(y = j - 1; y >= 0; y--) {
         tile = _grid.getTile(i, y)
         if(!tile) break
         else if(tile.type !== type) break
@@ -90,7 +104,51 @@ function Game(n, types) {
       })
 
       typesAvailable = _.difference(_.range(1, types+1), avoidTypes)
-      column.tiles.push(new Tile(_.sample(typesAvailable)))
+      column.tiles.push(new Tile(x, y, _.sample(typesAvailable)))
+    }
+
+    this.select = function(tile) {
+      var distance
+        , maxRun
+
+      if(_grid.selectedTile && _grid.selectedTile !== tile) {
+        distance = Math.abs(_grid.selectedTile.x - tile.x)
+                 + Math.abs(_grid.selectedTile.y - tile.y)
+        maxRun = Math.max( _grid.verticalRunCount(tile.x, tile.y, _grid.selectedTile.type)
+                         , _grid.horizontalRunCount(tile.x, tile.y, _grid.selectedTile.type)
+                         )
+
+        if(distance == 1 && maxRun >= 3) {
+          _grid.swapTiles(_grid.selectedTile, tile)
+          _grid.selectedTile.selected(false)
+          _grid.selectedTile = null
+        }
+        else {
+          _grid.selectedTile.selected(false)
+          _grid.selectedTile = null
+          alert('invalid move')
+        }
+      }
+      else {
+        _grid.selectedTile = tile
+        tile.selected(true)
+      }
+    }
+
+    this.swapTiles = function(tile1, tile2) {
+      var tmpx
+        , tmpy
+
+      _game.grid.columns[tile1.x].tiles.splice(tile1.y, 1, tile2)
+      _game.grid.columns[tile2.x].tiles.splice(tile2.y, 1, tile1)
+
+      // ugh
+      tmpx = tile1.x
+      tmpy = tile1.y
+      tile1.x = tile2.x
+      tile1.y = tile2.y
+      tile2.x = tmpx
+      tile2.y = tmpy
     }
 
     ko.computed(function() {
@@ -107,44 +165,6 @@ function Game(n, types) {
         _grid.addTile(i)
       })
     }, 250)
-  }
-
-  function Tile(type) {
-    var _tile = this
-
-    this.type = type
-    this.selected = ko.observable(false)
-
-    this.tileClass = ko.computed(function() {
-      return 'tileType' + type + (_tile.selected() ? ' selected' : '')
-    })
-  }
-
-  this.select = function(tile) {
-    if(_game.source) {
-      _game.swapTiles(_game.source, tile)
-      _game.source.selected(false)
-      _game.source = null
-    }
-    else {
-      _game.source = tile
-      tile.selected(true)
-    }
-  }
-
-  this.swapTiles = function(tile1, tile2) {
-    function findTileCoords(tile) {
-      var i, j
-      for(i = 0; i < n; i++) {
-        j = _game.grid.columns[i].tiles.indexOf(tile)
-        if(j !== -1) break
-      }
-    return [i, j]
-    }
-    var tile1Coords = findTileCoords(tile1)
-      , tile2Coords = findTileCoords(tile2)
-    _game.grid.columns[tile1Coords[0]].tiles.splice(tile1Coords[1], 1, tile2)
-    _game.grid.columns[tile2Coords[0]].tiles.splice(tile2Coords[1], 1, tile1)
   }
 
   this.grid = new TileGrid(n)
