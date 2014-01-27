@@ -39,22 +39,29 @@ function Game(n, types) {
       return _grid.columns[x].tiles()[y]
     }
 
-    this.horizontalRunCount = function(i, j, type) {
+    this.horizontalRunCount = function(i, j, type, tile1, tile2) {
       var x
         , count = 1
         , tile
+        , getTile = function(x, y) {
+          if(tile1 && tile2) {
+            if(x === tile1.x && y === tile1.y) return tile2
+            if(x === tile2.x && y === tile2.y) return tile1
+          }
+          return _grid.getTile(x, y)
+        }
 
-      if(!type && (tile = _grid.getTile(i, j))) type = tile.type
+      if(!type && (tile = getTile(i, j))) type = tile.type
       else if(!type) return 0
 
       for(x = i + 1; x < n; x++) {
-        tile = _grid.getTile(x, j)
+        tile = getTile(x, j)
         if(!tile) break
         else if(tile.type !== type) break
         count++
       }
       for(x = i - 1; x >= 0; x--) {
-        tile = _grid.getTile(x, j)
+        tile = getTile(x, j)
         if(!tile) break
         else if(tile.type !== type) break
         count++
@@ -62,22 +69,29 @@ function Game(n, types) {
       return count
     }
 
-    this.verticalRunCount = function(i, j, type) {
+    this.verticalRunCount = function(i, j, type, tile1, tile2) {
       var y
         , count = 1
         , tile
+        , getTile = function(x, y) {
+          if(tile1 && tile2) {
+            if(x === tile1.x && y === tile1.y) return tile2
+            if(x === tile2.x && y === tile2.y) return tile1
+          }
+          return _grid.getTile(x, y)
+        }
 
-      if(!type && (tile = _grid.getTile(i, j))) type = tile.type
+      if(!type && (tile = getTile(i, j))) type = tile.type
       else if(!type) return 0
 
       for(y = j + 1; y < n; y++) {
-        tile = _grid.getTile(i, y)
+        tile = getTile(i, y)
         if(!tile) break
         else if(tile.type !== type) break
         count++
       }
       for(y = j - 1; y >= 0; y--) {
-        tile = _grid.getTile(i, y)
+        tile = getTile(i, y)
         if(!tile) break
         else if(tile.type !== type) break
         count++
@@ -111,20 +125,36 @@ function Game(n, types) {
 
     this.isValidSwap = function(tile1, tile2) {
       var distance
-        , maxRun
+        , runs
 
       distance = Math.abs(tile1.x - tile2.x)
                + Math.abs(tile1.y - tile2.y)
-      maxRun = Math.max( _grid.verticalRunCount( tile2.x
+      maxRun = Math.max( _grid.verticalRunCount( tile1.x
+                                               , tile1.y
+                                               , tile2.type
+                                               , tile1
+                                               , tile2
+                                               )
+                       , _grid.horizontalRunCount( tile1.x
+                                                 , tile1.y
+                                                 , tile2.type
+                                                 , tile1
+                                                 , tile2
+                                                 )
+                       , _grid.verticalRunCount( tile2.x
                                                , tile2.y
                                                , tile1.type
+                                               , tile1
+                                               , tile2
                                                )
                        , _grid.horizontalRunCount( tile2.x
                                                  , tile2.y
                                                  , tile1.type
+                                                 , tile1
+                                                 , tile2
                                                  )
                        )
-      return distance == 1 && maxRun >= 3
+      return (distance == 1 && maxRun >= 3)
     }
 
     this.select = function(tile) {
@@ -217,14 +247,17 @@ function Game(n, types) {
       for(x = 0; x < n; x++) {
         for(y = 0; y < n; y++) {
           tile = _grid.getTile(x, y)
+          if(!tile) continue
           if(x < n-1) {
             // check right
             swapTile = _grid.getTile(x+1, y)
+            if(!swapTile) continue
             if(_grid.isValidSwap(tile, swapTile)) moves.push([tile, swapTile])
           }
           if(y < n-1) {
             // check down
             swapTile = _grid.getTile(x, y+1)
+            if(!swapTile) continue
             if(_grid.isValidSwap(tile, swapTile)) moves.push([tile, swapTile])
           }
         }
@@ -233,12 +266,16 @@ function Game(n, types) {
       return moves
     }
 
+    this.hint = function() {
+      return _.sample(_grid.findPossibleMoves())
+    }
+
     ko.computed(function() {
       var tilesRemoved
 
       _grid.columns.forEach(function(column, i) {
         if(column.tiles().length < n) {
-          _grid.addTile(i)
+          window.setTimeout(function() { _grid.addTile(i) }, 1)
         }
       })
 
@@ -246,12 +283,20 @@ function Game(n, types) {
       _game.score(_game.score() + tilesRemoved)
     }).extend({throttle: 250})
 
-    // this gets the computed started, dunno why it's needed...
-    window.setTimeout(function() {
-      _.range(n).forEach(function(i) {
-        _grid.addTile(i)
-      })
-    }, 250)
+    ko.computed(function() {
+      console.log("donk!");
+      var ls = _grid.columns.map(function(c) { return c.tiles().length })
+        , possibleMoves = []
+
+      // if it's a full board
+      if(ls.reduce(function(x, l){return x + l}) === n*n) {
+        possibleMoves = _grid.findPossibleMoves()
+
+        if(possibleMoves.length === 0) {
+          alert('game over, no more moves')
+        }
+      }
+    }).extend({throttle: 1000})
   }
 
   this.score = ko.observable(0)
@@ -259,7 +304,7 @@ function Game(n, types) {
 
 }
 
-var game = new Game(10, 7)
+var game = new Game(8, 7)
 
 $(function() {
   ko.applyBindings(game)
