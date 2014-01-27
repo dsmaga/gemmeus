@@ -109,28 +109,31 @@ function Game(n, types) {
       column.tiles.push(new Tile(x, y, _.sample(typesAvailable)))
     }
 
-    this.select = function(tile) {
+    this.isValidSwap = function(tile1, tile2) {
       var distance
         , maxRun
 
+      distance = Math.abs(tile1.x - tile2.x)
+               + Math.abs(tile1.y - tile2.y)
+      maxRun = Math.max( _grid.verticalRunCount( tile2.x
+                                               , tile2.y
+                                               , tile1.type
+                                               )
+                       , _grid.horizontalRunCount( tile2.x
+                                                 , tile2.y
+                                                 , tile1.type
+                                                 )
+                       )
+      return distance == 1 && maxRun >= 3
+    }
+
+    this.select = function(tile) {
       if(_grid.selectedTile && _grid.selectedTile === tile) {
         _grid.selectedTile.selected(false)
         _grid.selectedTile = null
       }
       else if(_grid.selectedTile) {
-        distance = Math.abs(_grid.selectedTile.x - tile.x)
-                 + Math.abs(_grid.selectedTile.y - tile.y)
-        maxRun = Math.max( _grid.verticalRunCount( tile.x
-                                                 , tile.y
-                                                 , _grid.selectedTile.type
-                                                 )
-                         , _grid.horizontalRunCount( tile.x
-                                                   , tile.y
-                                                   , _grid.selectedTile.type
-                                                   )
-                         )
-
-        if(distance == 1 && maxRun >= 3) {
+        if(_grid.isValidSwap(_grid.selectedTile, tile)) {
           _grid.swapTiles(_grid.selectedTile, tile)
           _grid.selectedTile.selected(false)
           _grid.selectedTile = null
@@ -142,6 +145,7 @@ function Game(n, types) {
         }
       }
       else {
+        console.log(tile.x, tile.y)
         _grid.selectedTile = tile
         tile.selected(true)
       }
@@ -203,6 +207,32 @@ function Game(n, types) {
       return tiles.length
     }
 
+    this.findPossibleMoves = function() {
+      var x
+        , y
+        , tile
+        , swapTile
+        , moves = []
+
+      for(x = 0; x < n; x++) {
+        for(y = 0; y < n; y++) {
+          tile = _grid.getTile(x, y)
+          if(x < n-1) {
+            // check right
+            swapTile = _grid.getTile(x+1, y)
+            if(_grid.isValidSwap(tile, swapTile)) moves.push([tile, swapTile])
+          }
+          if(y < n-1) {
+            // check down
+            swapTile = _grid.getTile(x, y+1)
+            if(_grid.isValidSwap(tile, swapTile)) moves.push([tile, swapTile])
+          }
+        }
+      }
+
+      return moves
+    }
+
     ko.computed(function() {
       var tilesRemoved
 
@@ -234,4 +264,3 @@ var game = new Game(10, 7)
 $(function() {
   ko.applyBindings(game)
 })
-
