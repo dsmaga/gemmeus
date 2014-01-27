@@ -44,7 +44,8 @@ function Game(n, types) {
         , count = 1
         , tile
 
-      if(!type) type = getTile(i, j).type
+      if(!type && (tile = _grid.getTile(i, j))) type = tile.type
+      else if(!type) return 0
 
       for(x = i + 1; x < n; x++) {
         tile = _grid.getTile(x, j)
@@ -66,7 +67,8 @@ function Game(n, types) {
         , count = 1
         , tile
 
-      if(!type) type = getTile(i, j).type
+      if(!type && (tile = _grid.getTile(i, j))) type = tile.type
+      else if(!type) return 0
 
       for(y = j + 1; y < n; y++) {
         tile = _grid.getTile(i, y)
@@ -111,14 +113,24 @@ function Game(n, types) {
       var distance
         , maxRun
 
-      if(_grid.selectedTile && _grid.selectedTile !== tile) {
+      if(_grid.selectedTile && _grid.selectedTile === tile) {
+        _grid.selectedTile.selected(false)
+        _grid.selectedTile = null
+      }
+      else if(_grid.selectedTile) {
         distance = Math.abs(_grid.selectedTile.x - tile.x)
                  + Math.abs(_grid.selectedTile.y - tile.y)
-        maxRun = Math.max( _grid.verticalRunCount(tile.x, tile.y, _grid.selectedTile.type)
-                         , _grid.horizontalRunCount(tile.x, tile.y, _grid.selectedTile.type)
+        maxRun = Math.max( _grid.verticalRunCount( tile.x
+                                                 , tile.y
+                                                 , _grid.selectedTile.type
+                                                 )
+                         , _grid.horizontalRunCount( tile.x
+                                                   , tile.y
+                                                   , _grid.selectedTile.type
+                                                   )
                          )
 
-        if(distance == 1 && maxRun >= 3) {
+        if(true/*distance == 1 && maxRun >= 3*/) {
           _grid.swapTiles(_grid.selectedTile, tile)
           _grid.selectedTile.selected(false)
           _grid.selectedTile = null
@@ -139,8 +151,8 @@ function Game(n, types) {
       var tmpx
         , tmpy
 
-      _game.grid.columns[tile1.x].tiles.splice(tile1.y, 1, tile2)
-      _game.grid.columns[tile2.x].tiles.splice(tile2.y, 1, tile1)
+      _grid.columns[tile1.x].tiles.splice(tile1.y, 1, tile2)
+      _grid.columns[tile2.x].tiles.splice(tile2.y, 1, tile1)
 
       // ugh
       tmpx = tile1.x
@@ -151,12 +163,57 @@ function Game(n, types) {
       tile2.y = tmpy
     }
 
+    this.findRuns = function() {
+      var tiles = []
+        , x
+        , y
+        , count
+
+      _grid.columns.forEach(function(column, x) {
+        var y
+          , count
+
+        for(y = 0; y < n; y++) {
+          count = _grid.verticalRunCount(x, y)
+          if(count >= 3) {
+            for(j = y; j < y + count; j++) { tiles.push(_grid.getTile(x, j)) }
+            y += (count-1)
+          }
+        }
+      })
+
+      for(y = 0; y < n; y++) {
+        for(x = 0; x < n; x++) {
+          count = _grid.horizontalRunCount(x, y)
+          if(count >= 3) {
+            for(i = x; i < x + count; i++) { tiles.push(_grid.getTile(i, y)) }
+            x += (count-1)
+          }
+        }
+      }
+
+      return _.unique(tiles)
+    }
+
+    this.removeTiles = function(tiles) {
+      tiles.forEach(function(tile) {
+        _grid.columns[tile.x].tiles.splice(tile.y, 1)
+        _grid.columns[tile.x].tiles().forEach(function(tile, i) { tile.y = i })
+      })
+      return tiles.length
+    }
+
     ko.computed(function() {
+      var tilesRemoved
+
       _grid.columns.forEach(function(column, i) {
         if(column.tiles().length < n) {
           _grid.addTile(i)
         }
       })
+
+      tilesRemoved = _grid.removeTiles(_grid.findRuns())
+      _game.score(_game.score() + tilesRemoved)
     }).extend({throttle: 250})
 
     // this gets the computed started, dunno why it's needed...
@@ -167,6 +224,7 @@ function Game(n, types) {
     }, 250)
   }
 
+  this.score = ko.observable(0)
   this.grid = new TileGrid(n)
 
 }
