@@ -130,7 +130,7 @@ function Game(n, types) {
                                                    )
                          )
 
-        if(true/*distance == 1 && maxRun >= 3*/) {
+        if(distance == 1 && maxRun >= 3) {
           _grid.swapTiles(_grid.selectedTile, tile)
           _grid.selectedTile.selected(false)
           _grid.selectedTile = null
