@@ -15,6 +15,9 @@
     <div class='container'>
       <h1>Game!</h1>
       <h2>Score: <span data-bind='text: score'>0</span></h2>
+      <button class='btn btn-default' data-bind='click: getHint'>
+        Get a hint!
+      </button>
       <div id='game-grid' data-bind='with: grid'>
         <div data-bind='foreach: columns'>
           <div class='column' data-bind='foreach: tilesReversed, css: offsetClass'>

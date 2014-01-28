@@ -9,9 +9,13 @@ function Game(n, types) {
     this.y = y
     this.type = type
     this.selected = ko.observable(false)
+    this.highlighted = ko.observable(false)
 
     this.tileClass = ko.computed(function() {
-      return 'tileType' + type + (_tile.selected() ? ' selected' : '')
+      return 'tileType'
+           + type
+           + (_tile.selected() ? ' selected' : '')
+           + (_tile.highlighted() ? ' highlighted' : '')
     })
   }
 
@@ -269,17 +273,30 @@ function Game(n, types) {
       return _.sample(_grid.findPossibleMoves())
     }
 
+    this.highlightTiles = function(tiles) {
+      tiles.forEach(function(tile) {
+        tile.highlighted(true)
+      })
+    }
+
     ko.computed(function() {
-      var tilesRemoved
+      var tilesToRemove
+        , tilesRemoved
 
       _grid.columns.forEach(function(column, i) {
         if(column.tiles().length < n) {
-          window.setTimeout(function() { _grid.addTile(i) }, 1)
+          window.setTimeout(function() { _grid.addTile(i) }, 0)
         }
       })
 
-      tilesRemoved = _grid.removeTiles(_grid.findRuns())
-      _game.score(_game.score() + tilesRemoved)
+      tilesToRemove = _grid.findRuns()
+      if(tilesToRemove.length > 0) {
+        _grid.highlightTiles(tilesToRemove)
+        window.setTimeout(function() {
+          tilesRemoved = _grid.removeTiles(tilesToRemove)
+          _game.score(_game.score() + tilesRemoved)
+        }, 500)
+      }
     }).extend({throttle: 250})
 
     ko.computed(function() {
@@ -299,6 +316,22 @@ function Game(n, types) {
 
   this.score = ko.observable(0)
   this.grid = new TileGrid(n)
+
+  this.getHint = function() {
+    var hint = _game.grid.hint()
+      , tile
+
+    if(!hint) {
+      alert('There are no more moves.')
+      return
+    }
+
+    tile = _.sample(hint)
+    tile.highlighted(true)
+    window.setTimeout(function() {
+      tile.highlighted(false)
+    }, 500)
+  }
 
 }
 
