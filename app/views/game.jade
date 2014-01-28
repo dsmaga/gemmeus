@@ -1,26 +1,12 @@
-doctype html
-html
-  head
-    meta(charset='utf8')
-    meta(name='viewport', content='width=device-width, initial-scale=1.0')
-    link(rel='stylesheet', type='text/css', href='/css/app.css')
-    script(type='text/javascript', src='/js/app.js')
-    title Gemmeus!
-  body
-    header.navbar.navbar-inverse.navbar-fixed-top
-      .container
-        .navbar-header
-          a.navbar-brand(href='/') Gemmeus!
-        ul.nav.navbar-nav
-          li: a(href='/') Play
-          li: a(href='/scores') High Scores
-    .container
-      .pull-right Score: <strong data-bind='text: score'>0</strong>
-      .pull-left
-        button.btn.btn-primary(data-bind='click: newGame') Start a new game
-        |&nbsp;
-        button.btn.btn-default(data-bind='click: getHint') Get a hint!
-      #game-grid(data-bind='with: grid')
-        div(data-bind='foreach: columns')
-          .column(data-bind='foreach: tilesReversed, css: offsetClass')
-            .tile(data-bind='css: tileClass, click: $root.grid.select')
+extends layout
+
+block content
+  .pull-right Score: <strong data-bind='text: score'>0</strong>
+  .pull-left
+    button.btn.btn-primary(data-bind='click: newGame') Start a new game
+    |&nbsp;
+    button.btn.btn-default(data-bind='click: getHint') Get a hint!
+  #game-grid(data-bind='with: grid')
+    div(data-bind='foreach: columns')
+      .column(data-bind='foreach: tilesReversed, css: offsetClass')
+        .tile(data-bind='css: tileClass, click: $root.grid.select')

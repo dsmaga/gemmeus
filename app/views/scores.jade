@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1 Top 10 high scores:
+  hr
+  if scores.length > 0
+    dl.dl-horizontal
+      for score in scores
+        dt= score.score
+        dd= score.name
+  else
+    p.alert.alert-info.
+      No scores here yet, why not go <a href='/'>play</a> and add some?

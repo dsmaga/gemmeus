@@ -14,7 +14,8 @@
     "koa-etag": "~1.2.2",
     "co-body": "~0.0.1",
     "co-views": "~0.2.0",
-    "then-jade": "~1.1.0"
+    "then-jade": "~1.1.0",
+    "mongoose": "~3.8.5"
   },
   "devDependencies": {
     "grunt": "~0.4.2",

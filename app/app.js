@@ -11,6 +11,7 @@ var start = Date.now()
   , serve = require('koa-static')
   , app = module.exports = koa()
   , render = require('./lib/render')
+  , HighScore = require('./models/high-score')
 
 // Delete the socket file if it exists (from a previous run)
 if (isUnixSocket && fs.existsSync(config.port)) {
@@ -41,6 +42,11 @@ app.use(serve('public'))
 
 app.get('/', function *() {
   this.body = yield render('game')
+})
+
+app.get('/scores', function *() {
+  var scores = yield HighScore.find().exec()
+  this.body = yield render('scores', {scores: scores})
 })
 
 // Listen
