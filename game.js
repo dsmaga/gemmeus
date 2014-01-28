@@ -279,6 +279,12 @@ function Game(n, types) {
       })
     }
 
+    this.clear = function() {
+      _grid.columns.forEach(function(column) {
+        column.tiles([])
+      })
+    }
+
     ko.computed(function() {
       var tilesToRemove
         , tilesRemoved
@@ -297,7 +303,7 @@ function Game(n, types) {
           _game.score(_game.score() + tilesRemoved)
         }, 500)
       }
-    }).extend({throttle: 250})
+    }).extend({throttle: 150})
 
     ko.computed(function() {
       var ls = _grid.columns.map(function(c) { return c.tiles().length })
@@ -311,7 +317,7 @@ function Game(n, types) {
           alert('game over, no more moves')
         }
       }
-    }).extend({throttle: 1000})
+    }).extend({throttle: 500})
   }
 
   this.score = ko.observable(0)
@@ -331,6 +337,11 @@ function Game(n, types) {
     window.setTimeout(function() {
       tile.highlighted(false)
     }, 500)
+  }
+
+  this.newGame = function() {
+    _game.grid.clear()
+    _game.score(0)
   }
 
 }
