@@ -1,0 +1,22 @@
+doctype html
+html
+  head
+    meta(charset='utf8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    link(rel='stylesheet', type='text/css', href='/css/app.css')
+    script(type='text/javascript', src='/js/app.js')
+    title Gemmeus!
+  body
+    .container
+      h1 Gemmeus!
+      h2
+        | Score:
+        span(data-bind='text: score') 0
+      button.btn.btn-default(data-bind='click: newGame')
+        | Start a new game
+      button.btn.btn-default(data-bind='click: getHint')
+        | Get a hint!
+      #game-grid(data-bind='with: grid')
+        div(data-bind='foreach: columns')
+          .column(data-bind='foreach: tilesReversed, css: offsetClass')
+            .tile(data-bind='css: tileClass, click: $root.grid.select')
