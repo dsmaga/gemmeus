@@ -7,15 +7,19 @@ html
     script(type='text/javascript', src='/js/app.js')
     title Gemmeus!
   body
+    header.navbar.navbar-inverse.navbar-fixed-top
+      .container
+        .navbar-header
+          a.navbar-brand(href='/') Gemmeus!
+        ul.nav.navbar-nav
+          li: a(href='/') Play
+          li: a(href='/scores') High Scores
     .container
-      h1 Gemmeus!
-      h2
-        | Score:
-        span(data-bind='text: score') 0
-      button.btn.btn-default(data-bind='click: newGame')
-        | Start a new game
-      button.btn.btn-default(data-bind='click: getHint')
-        | Get a hint!
+      .pull-right Score: <strong data-bind='text: score'>0</strong>
+      .pull-left
+        button.btn.btn-primary(data-bind='click: newGame') Start a new game
+        |&nbsp;
+        button.btn.btn-default(data-bind='click: getHint') Get a hint!
       #game-grid(data-bind='with: grid')
         div(data-bind='foreach: columns')
           .column(data-bind='foreach: tilesReversed, css: offsetClass')
