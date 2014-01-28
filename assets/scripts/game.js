@@ -285,32 +285,41 @@ function Game(n, types) {
       })
     }
 
-    ko.computed(function() {
-      var tilesToRemove
-        , tilesRemoved
+    this.fullBoard = ko.computed(function() {
+      return _grid.columns.map(function(c) {
+        return c.tiles().length
+      }).reduce(function(x, l){return x + l}) === n*n
+    })
 
+    ko.computed(function() {
       _grid.columns.forEach(function(column, i) {
         if(column.tiles().length < n) {
           window.setTimeout(function() { _grid.addTile(i) }, 0)
         }
       })
-
-      tilesToRemove = _grid.findRuns()
-      if(tilesToRemove.length > 0) {
-        _grid.highlightTiles(tilesToRemove)
-        window.setTimeout(function() {
-          tilesRemoved = _grid.removeTiles(tilesToRemove)
-          _game.score(_game.score() + tilesRemoved)
-        }, 500)
-      }
     }).extend({throttle: 150})
 
     ko.computed(function() {
-      var ls = _grid.columns.map(function(c) { return c.tiles().length })
-        , possibleMoves = []
+      var tilesToRemove
+        , tilesRemoved
+
+      if(_grid.fullBoard()) {
+        tilesToRemove = _grid.findRuns()
+        if(tilesToRemove.length > 0) {
+          _grid.highlightTiles(tilesToRemove)
+          window.setTimeout(function() {
+            tilesRemoved = _grid.removeTiles(tilesToRemove)
+            _game.score(_game.score() + tilesRemoved)
+          }, 500)
+        }
+      }
+    }).extend({throttle: 200})
+
+    ko.computed(function() {
+      var possibleMoves = []
 
       // if it's a full board
-      if(ls.reduce(function(x, l){return x + l}) === n*n) {
+      if(_grid.fullBoard()) {
         possibleMoves = _grid.findPossibleMoves()
 
         if(possibleMoves.length === 0) {

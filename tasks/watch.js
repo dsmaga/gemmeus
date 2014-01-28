@@ -1,9 +1,5 @@
 module.exports =
-  { hintScripts:
-      { files: ['**/*.js']
-      , tasks: ['jshint']
-      }
-  , concatScripts:
+  { concatScripts:
       { files: ['assets/**/*.js']
       , tasks: ['concat:appJs', 'uglify']
       }
