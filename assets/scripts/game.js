@@ -15,6 +15,14 @@ function Game(n, types) {
     window.setTimeout(function() {
       _tile.slidingIn(false)
     }, 1000)
+    this.shaking = ko.observable(false)
+
+    this.shake = function() {
+      _tile.shaking(true)
+      window.setTimeout(function() {
+        _tile.shaking(false)
+      }, 1000)
+    }
 
     this.tileClass = ko.computed(function() {
       return  [ 'tileType'
@@ -23,6 +31,7 @@ function Game(n, types) {
               , (_tile.highlighted() ? ' animated pulse' : '')
               , (_tile.bounceOut() ? ' animated bounceOut' : '')
               , (_tile.slidingIn() ? ' animated slideInDown' : '')
+              , (_tile.shaking() ? ' animated shake' : '')
               ].join('')
     })
   }
@@ -180,9 +189,10 @@ function Game(n, types) {
           _grid.selectedTile = null
         }
         else {
+          tile.shake()
+          _grid.selectedTile.shake()
           _grid.selectedTile.selected(false)
           _grid.selectedTile = null
-          bootbox.alert('Invalid move.')
         }
       }
       else {
