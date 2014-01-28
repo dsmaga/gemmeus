@@ -175,7 +175,6 @@ function Game(n, types) {
         }
       }
       else {
-        console.log(tile.x, tile.y)
         _grid.selectedTile = tile
         tile.selected(true)
       }
@@ -284,7 +283,6 @@ function Game(n, types) {
     }).extend({throttle: 250})
 
     ko.computed(function() {
-      console.log("donk!");
       var ls = _grid.columns.map(function(c) { return c.tiles().length })
         , possibleMoves = []
 
