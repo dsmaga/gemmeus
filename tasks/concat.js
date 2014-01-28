@@ -1,7 +1,7 @@
 module.exports =
   { appCss:
       { options: { separator: '\n' }
-      , src: ['tmp/css/app.css']
+      , src: ['bower_components/animate.css/animate.min.css', 'tmp/css/app.css']
       , dest: 'public/css/app.css'
       }
   , appJs:

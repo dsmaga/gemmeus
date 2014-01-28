@@ -10,12 +10,19 @@ function Game(n, types) {
     this.type = type
     this.selected = ko.observable(false)
     this.highlighted = ko.observable(false)
+    this.bounceOut = ko.observable(false)
+    this.slidingIn = ko.observable(true)
+    window.setTimeout(function() {
+      _tile.slidingIn(false)
+    }, 1000)
 
     this.tileClass = ko.computed(function() {
       return  [ 'tileType'
               , type
               , (_tile.selected() ? ' selected' : '')
-              , (_tile.highlighted() ? ' highlighted' : '')
+              , (_tile.highlighted() ? ' animated pulse' : '')
+              , (_tile.bounceOut() ? ' animated bounceOut' : '')
+              , (_tile.slidingIn() ? ' animated slideInDown' : '')
               ].join('')
     })
   }
@@ -281,6 +288,12 @@ function Game(n, types) {
       })
     }
 
+    this.bounceOutTiles = function(tiles) {
+      tiles.forEach(function(tile) {
+        tile.bounceOut(true)
+      })
+    }
+
     this.clear = function() {
       _grid.columns.forEach(function(column) {
         column.tiles([])
@@ -308,11 +321,11 @@ function Game(n, types) {
       if(_grid.fullBoard()) {
         tilesToRemove = _grid.findRuns()
         if(tilesToRemove.length > 0) {
-          _grid.highlightTiles(tilesToRemove)
+          _grid.bounceOutTiles(tilesToRemove)
           window.setTimeout(function() {
             tilesRemoved = _grid.removeTiles(tilesToRemove)
             _game.score(_game.score() + tilesRemoved)
-          }, 500)
+          }, 1000)
         }
       }
     }).extend({throttle: 200})
@@ -359,7 +372,7 @@ function Game(n, types) {
     tile.highlighted(true)
     window.setTimeout(function() {
       tile.highlighted(false)
-    }, 500)
+    }, 1000)
   }
 
   this.newGame = function() {

@@ -20,7 +20,7 @@ module.exports =
       , options: { livereload: true }
       }
   , gruntfile:
-      { files: 'Gruntfile.coffee'
-      , tasks: ['deploy-assets']
+      { files: ['Gruntfile.coffee', 'tasks/**/*.js']
+      , tasks: ['deployAssets']
       }
   }
