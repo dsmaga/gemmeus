@@ -1,5 +1,5 @@
 {
-  "name": "untitled-bejeweled-clone",
+  "name": "gemmeus",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
@@ -7,7 +7,6 @@
     "bootstrap": "~3.0.3",
     "font-awesome": "~4.0.3",
     "knockout.js": "~3.0.0",
-    "sugar": "~1.4.1",
     "lodash": "~2.4.1"
   }
 }
