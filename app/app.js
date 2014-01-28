@@ -45,8 +45,14 @@ app.get('/', function *() {
 })
 
 app.get('/scores', function *() {
-  var scores = yield HighScore.find().exec()
+  var scores = yield HighScore.find().sort('-score').limit(10).exec()
   this.body = yield render('scores', {scores: scores})
+})
+
+app.post('/scores', function *() {
+  var newScore = this.req.body
+  yield HighScore.create(newScore)
+  this.body = true
 })
 
 // Listen

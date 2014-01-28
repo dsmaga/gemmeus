@@ -10,6 +10,7 @@ module.exports =
         , 'bower_components/knockout.js/knockout.js'
         , 'bower_components/lodash/dist/lodash.js'
         , 'bower_components/bootstrap/dist/js/bootstrap.js'
+        , 'bower_components/bootbox/bootbox.js'
         , 'assets/scripts/game.js'
         ]
       , dest: 'public/js/app.js'

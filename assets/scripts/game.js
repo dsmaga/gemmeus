@@ -175,7 +175,7 @@ function Game(n, types) {
         else {
           _grid.selectedTile.selected(false)
           _grid.selectedTile = null
-          alert('invalid move')
+          bootbox.alert('Invalid move.')
         }
       }
       else {
@@ -323,7 +323,18 @@ function Game(n, types) {
         possibleMoves = _grid.findPossibleMoves()
 
         if(possibleMoves.length === 0) {
-          alert('game over, no more moves')
+          bootbox.dialog({ title: 'Game Over!'
+                        , message: 'There are no more moves available.  ' +
+                                    'Would you like to save your high score?'
+                        ,  buttons:
+                             { success:
+                                 { label: 'Yes'
+                                 , className: 'btn-success'
+                                 , callback: _game.saveScore
+                                 }
+                             , close: { label: 'No thanks' }
+                             }
+                        })
         }
       }
     }).extend({throttle: 500})
@@ -337,7 +348,7 @@ function Game(n, types) {
       , tile
 
     if(!hint) {
-      alert('There are no more moves.')
+      bootbox.alert('Sorry, there are no more moves.')
       return
     }
 
@@ -353,10 +364,27 @@ function Game(n, types) {
     _game.score(0)
   }
 
+  this.saveScore = function() {
+    bootbox.prompt('What is your name?', function(name) {
+      if(name) {
+        req = $.ajax( { contentType: 'application/json'
+                      , data: JSON.stringify({ score: _game.score()
+                                             , name: name
+                                             })
+                      , dataType: 'json'
+                      , type: 'POST'
+                      , url: '/scores'
+                      } )
+
+        req.done(function() {
+          window.location = '/scores'
+        })
+
+        req.fail(function() {
+          bootbox.alert('Something went wrong...')
+        })
+      }
+    })
+  }
+
 }
-
-var game = new Game(8, 7)
-
-$(function() {
-  ko.applyBindings(game)
-})
