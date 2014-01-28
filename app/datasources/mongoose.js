@@ -1,7 +1,7 @@
 var mongoose = require('mongoose')
+  , mongoConfig = require('../config/mongo')
 
 // connect to mongo
-mongoConfig = require('../config/mongo')
 mongoose.connect(mongoConfig.uri, mongoConfig.options, function(err) {
   if(err) throw err
 })

@@ -18,13 +18,18 @@ module.exports = function(grunt) {
 
   grunt.registerTask('deployAssets',
     [ 'clean:pre'
-    // , 'jshint'
+    , 'jshint'
     , 'less'
     , 'concat'
-    , 'uglify'
     , 'clean:post'
     ]
   )
 
-  grunt.registerTask('default', ['deployAssets'])
+  grunt.registerTask('deployProductionAssets',
+    [ 'deployAssets'
+    , 'uglify'
+    ]
+  )
+
+  grunt.registerTask('default', ['deployAssets', 'watch'])
 }

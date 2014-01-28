@@ -1,7 +1,11 @@
 module.exports =
-  { concatScripts:
+  { lintScripts:
+      { files: ['**/*.js']
+      , tasks: ['jshint']
+      }
+  , concatScripts:
       { files: ['assets/**/*.js']
-      , tasks: ['concat:appJs', 'uglify']
+      , tasks: ['concat:appJs']
       }
   , styles:
       { files: ['assets/styles/**/*.less']

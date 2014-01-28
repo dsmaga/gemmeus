@@ -12,10 +12,11 @@ function Game(n, types) {
     this.highlighted = ko.observable(false)
 
     this.tileClass = ko.computed(function() {
-      return 'tileType'
-           + type
-           + (_tile.selected() ? ' selected' : '')
-           + (_tile.highlighted() ? ' highlighted' : '')
+      return  [ 'tileType'
+              , type
+              , (_tile.selected() ? ' selected' : '')
+              , (_tile.highlighted() ? ' highlighted' : '')
+              ].join('')
     })
   }
 
@@ -35,7 +36,7 @@ function Game(n, types) {
   function TileGrid(n) {
     var _grid = this
 
-    this.columns = _.range(n).map(function(){return new Column})
+    this.columns = _.range(n).map(function(){return new Column()})
     this.selectedTile = null
 
     this.getTile = function(x, y) {
@@ -129,10 +130,9 @@ function Game(n, types) {
 
     this.isValidSwap = function(tile1, tile2) {
       var distance
-        , runs
+        , maxRun
 
-      distance = Math.abs(tile1.x - tile2.x)
-               + Math.abs(tile1.y - tile2.y)
+      distance = Math.abs(tile1.x - tile2.x) + Math.abs(tile1.y - tile2.y)
       maxRun = Math.max( _grid.verticalRunCount( tile1.x
                                                , tile1.y
                                                , tile2.type
@@ -158,7 +158,7 @@ function Game(n, types) {
                                                  , tile2
                                                  )
                        )
-      return (distance == 1 && maxRun >= 3)
+      return (distance === 1 && maxRun >= 3)
     }
 
     this.select = function(tile) {
@@ -204,10 +204,12 @@ function Game(n, types) {
       var tiles = []
         , x
         , y
+        , i
         , count
 
       _grid.columns.forEach(function(column, x) {
         var y
+          , j
           , count
 
         for(y = 0; y < n; y++) {
@@ -323,18 +325,19 @@ function Game(n, types) {
         possibleMoves = _grid.findPossibleMoves()
 
         if(possibleMoves.length === 0) {
-          bootbox.dialog({ title: 'Game Over!'
-                        , message: 'There are no more moves available.  ' +
+          bootbox.dialog( { title: 'Game Over!'
+                          , message: 'There are no more moves available.  ' +
                                     'Would you like to save your high score?'
-                        ,  buttons:
-                             { success:
-                                 { label: 'Yes'
-                                 , className: 'btn-success'
-                                 , callback: _game.saveScore
-                                 }
-                             , close: { label: 'No thanks' }
-                             }
-                        })
+                          , buttons:
+                              { success:
+                                  { label: 'Yes'
+                                  , className: 'btn-success'
+                                  , callback: _game.saveScore
+                                  }
+                              , close: { label: 'No thanks' }
+                              }
+                          }
+                        )
         }
       }
     }).extend({throttle: 500})
@@ -366,6 +369,8 @@ function Game(n, types) {
 
   this.saveScore = function() {
     bootbox.prompt('What is your name?', function(name) {
+      var req
+
       if(name) {
         req = $.ajax( { contentType: 'application/json'
                       , data: JSON.stringify({ score: _game.score()

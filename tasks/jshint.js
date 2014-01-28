@@ -22,7 +22,14 @@ module.exports =
   , app: [ 'Gruntfile.js', 'app/**/*.js' ]
   , tasks: [ 'tasks/**/*.js' ]
   , assets:
-      { options: { browser: true, globals: { '$': true } }
+      { options:  { browser:  true
+                  , globals:  { '$': true
+                              , '_': true
+                              , 'ko': true
+                              , 'bootbox': true
+                              }
+                  , exported: [ 'Game' ]
+                  }
       , files: { src: [ 'assets/**/*.js' ] }
       }
   }
