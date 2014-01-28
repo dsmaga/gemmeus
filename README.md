@@ -15,6 +15,11 @@ About
 
 Gemmeus is a simple Bejeweled clone.
 
+Demo
+====
+
+Check out the online demo at [gemmeus.infinitymotel.net](http://gemmeus.infinitymotel.net/).
+
 How to run
 ==========
 
