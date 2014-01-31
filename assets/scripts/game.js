@@ -1,4 +1,4 @@
-function Game(n, types) {
+function Game(n, types, animDuration) {
 
   var _game = this
 
@@ -14,14 +14,14 @@ function Game(n, types) {
     this.slidingIn = ko.observable(true)
     window.setTimeout(function() {
       _tile.slidingIn(false)
-    }, 1000)
+    }, animDuration)
     this.shaking = ko.observable(false)
 
     this.shake = function() {
       _tile.shaking(true)
       window.setTimeout(function() {
         _tile.shaking(false)
-      }, 1000)
+      }, animDuration)
     }
 
     this.tileClass = ko.computed(function() {
@@ -54,6 +54,7 @@ function Game(n, types) {
 
     this.columns = _.range(n).map(function(){return new Column()})
     this.selectedTile = null
+    this.swappingLocked = ko.observable(false)
 
     this.getTile = function(x, y) {
       if(x < 0 || x >= n) return void(0)
@@ -178,6 +179,8 @@ function Game(n, types) {
     }
 
     this.select = function(tile) {
+      if(_grid.swappingLocked()) return
+
       if(_grid.selectedTile && _grid.selectedTile === tile) {
         _grid.selectedTile.selected(false)
         _grid.selectedTile = null
@@ -322,7 +325,7 @@ function Game(n, types) {
           window.setTimeout(function() { _grid.addTile(i) }, 0)
         }
       })
-    }).extend({throttle: 150})
+    }).extend({throttle: 10})
 
     ko.computed(function() {
       var tilesToRemove
@@ -331,14 +334,16 @@ function Game(n, types) {
       if(_grid.fullBoard()) {
         tilesToRemove = _grid.findRuns()
         if(tilesToRemove.length > 0) {
+          _grid.swappingLocked(true)
           _grid.bounceOutTiles(tilesToRemove)
           window.setTimeout(function() {
             tilesRemoved = _grid.removeTiles(tilesToRemove)
             _game.score(_game.score() + tilesRemoved)
-          }, 1000)
+            _grid.swappingLocked(false)
+          }, animDuration)
         }
       }
-    }).extend({throttle: 200})
+    }).extend({throttle: 20})
 
     ko.computed(function() {
       var possibleMoves = []
