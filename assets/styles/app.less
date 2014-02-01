@@ -11,8 +11,9 @@ body {
   padding: 10px;
   margin: 0 auto;
   background-color: rgb(222, 236, 245);
-  border: 2px solid black;
-  border-radius: 44px;
+  border: 2px solid gray;
+  border-radius: 32px;
+  box-shadow: 1px 1px 16px 0px rgba(0, 0, 0, .5);
 }
 
 .column {
@@ -27,12 +28,17 @@ body {
   margin: 4px 2px;
   border: 2px solid black;
   border-radius: 32px;
-  box-shadow: 1px 1px 16px 0px rgba(0, 0, 0, 1);
+  box-shadow: 1px 1px 16px 0px rgba(66, 75, 82, 0.25);
   -webkit-animation-duration: 0.75s;
+}
+
+.tile:hover, .tile.selected {
+  box-shadow: 1px 1px 16px 0px rgba(66, 75, 82, 1);
 }
 
 /* Red */
 .tile.tileType1 {
+  border-color: #691100;
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
   background: rgb(242,32,0);
@@ -47,6 +53,7 @@ body {
 
 /* Green */
 .tile.tileType2 {
+  border-color: #496D00;
   border-bottom-right-radius: 8px;
   border-bottom-left-radius: 8px;
   background: rgb(191,210,85);
@@ -61,6 +68,7 @@ body {
 
 /* Blue */
 .tile.tileType3 {
+  border-color: #788186;
   border-bottom-right-radius: 8px;
   border-top-left-radius: 8px;
   background: rgb(242,246,248);
@@ -75,6 +83,7 @@ body {
 
 /* Yellow */
 .tile.tileType4 {
+  border-color: #C08C00;
   border-top-right-radius: 8px;
   border-bottom-left-radius: 8px;
   background: rgb(252,234,187);
@@ -89,6 +98,7 @@ body {
 
 /* Purple */
 .tile.tileType5 {
+  border-color: #630046;
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
@@ -104,6 +114,7 @@ body {
 
 /* Orange */
 .tile.tileType6 {
+  border-color: #8A2F00;
   background: rgb(254,204,177);
   background: -moz-linear-gradient(45deg,  rgba(254,204,177,1) 0%, rgba(241,116,50,1) 50%, rgba(234,85,7,1) 51%, rgba(251,149,94,1) 100%);
   background: -webkit-gradient(linear, left bottom, right top, color-stop(0%,rgba(254,204,177,1)), color-stop(50%,rgba(241,116,50,1)), color-stop(51%,rgba(234,85,7,1)), color-stop(100%,rgba(251,149,94,1)));
@@ -116,6 +127,7 @@ body {
 
 /* Aqua */
 .tile.tileType7 {
+  border-color: #127999;
   border-radius: 8px;
   background: rgb(183,222,237);
   background: -moz-radial-gradient(center, ellipse cover,  rgba(183,222,237,1) 0%, rgba(113,206,239,1) 50%, rgba(33,180,226,1) 51%, rgba(183,222,237,1) 100%);
