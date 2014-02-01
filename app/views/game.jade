@@ -9,7 +9,7 @@ block content
   #game-grid(data-bind='with: grid')
     div(data-bind='foreach: columns')
       .column(data-bind='foreach: tilesReversed, css: offsetClass')
-        .tile(data-bind='css: tileClass, click: $root.grid.select')
+        .tile.animated(data-bind='css: tileClass, click: $root.grid.select')
 
 block script
   script(type='text/javascript').

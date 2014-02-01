@@ -2,38 +2,57 @@ function Game(n, types, animDuration) {
 
   var _game = this
 
-  function Tile(x, y, type) {
+  function Tile(type) {
     var _tile = this
+      , classes = ko.observableArray(['tileType'+type])
 
-    this.x = x
-    this.y = y
+    this.x = ko.computed(function() {
+      return _game.grid.columns.map(function(column) {
+        return column.tiles.indexOf(_tile) !== -1
+      }).indexOf(true)
+    })
+    this.y = ko.computed(function() {
+      return _tile.x() === -1 ? -1 : _game.grid.columns[_tile.x()]
+        .tiles.indexOf(_tile)
+    })
     this.type = type
-    this.selected = ko.observable(false)
-    this.highlighted = ko.observable(false)
-    this.bounceOut = ko.observable(false)
-    this.slidingIn = ko.observable(true)
-    window.setTimeout(function() {
-      _tile.slidingIn(false)
-    }, animDuration)
-    this.shaking = ko.observable(false)
 
-    this.shake = function() {
-      _tile.shaking(true)
+    this.tileClass = ko.computed(function() {
+      return classes().join(' ')
+    })
+
+    function addClass(className) {
+      if(classes.indexOf(className) === -1)
+        classes.push(className)
+    }
+
+    function removeClass(className) {
+      classes.remove(className)
+    }
+
+    function animate(animation, done) {
+      addClass(animation)
       window.setTimeout(function() {
-        _tile.shaking(false)
+        removeClass(animation)
+        if(done) done()
       }, animDuration)
     }
 
-    this.tileClass = ko.computed(function() {
-      return  [ 'tileType'
-              , type
-              , (_tile.selected() ? ' selected' : '')
-              , (_tile.highlighted() ? ' animated pulse' : '')
-              , (_tile.bounceOut() ? ' animated bounceOut' : '')
-              , (_tile.slidingIn() ? ' animated slideInDown' : '')
-              , (_tile.shaking() ? ' animated shake' : '')
-              ].join('')
-    })
+    this.select = function() {
+      addClass('selected')
+    }
+    this.deselect = function() { removeClass('selected') }
+    this.shake = function() { animate('shake') }
+    this.highlight = function() { animate('pulse') }
+
+    this.remove = function() {
+      var x = _tile.x()
+      animate('bounceOut', function() {
+        _game.grid.columns[x].tiles.remove(_tile)
+      })
+    }
+
+    animate('slideInDown')
   }
 
   function Column() {
@@ -61,14 +80,19 @@ function Game(n, types, animDuration) {
       return _grid.columns[x].tiles()[y]
     }
 
+    /* Determines the length of the horizontal run containing the tile at i, j.
+       Optionally specify a `type` of the run, otherwise defaults to the type of
+       the tile at i, j.
+       Optionally specify two tiles to assume they have been swapped.
+    */
     this.horizontalRunCount = function(i, j, type, tile1, tile2) {
       var x
         , count = 1
         , tile
         , getTile = function(x, y) {
           if(tile1 && tile2) {
-            if(x === tile1.x && y === tile1.y) return tile2
-            if(x === tile2.x && y === tile2.y) return tile1
+            if(x === tile1.x() && y === tile1.y()) return tile2
+            if(x === tile2.x() && y === tile2.y()) return tile1
           }
           return _grid.getTile(x, y)
         }
@@ -91,14 +115,19 @@ function Game(n, types, animDuration) {
       return count
     }
 
+    /* Determines the length of the vertical run containing the tile at i, j.
+       Optionally specify a `type` of the run, otherwise defaults to the type of
+       the tile at i, j.
+       Optionally specify two tiles to assume they have been swapped.
+    */
     this.verticalRunCount = function(i, j, type, tile1, tile2) {
       var y
         , count = 1
         , tile
         , getTile = function(x, y) {
           if(tile1 && tile2) {
-            if(x === tile1.x && y === tile1.y) return tile2
-            if(x === tile2.x && y === tile2.y) return tile1
+            if(x === tile1.x() && y === tile1.y()) return tile2
+            if(x === tile2.x() && y === tile2.y()) return tile1
           }
           return _grid.getTile(x, y)
         }
@@ -121,6 +150,9 @@ function Game(n, types, animDuration) {
       return count
     }
 
+    /* Add a new tile to column x, but don't allow a run to be created while
+       doing so.
+    */
     this.addTile = function(x) {
       var avoidTypes = []
         , typesAvailable
@@ -142,34 +174,37 @@ function Game(n, types, animDuration) {
       })
 
       typesAvailable = _.difference(_.range(1, types+1), avoidTypes)
-      column.tiles.push(new Tile(x, y, _.sample(typesAvailable)))
+      column.tiles.push(new Tile(_.sample(typesAvailable)))
     }
 
+    /* Determine if swapping tile1 and tile2 is allowed
+    */
     this.isValidSwap = function(tile1, tile2) {
       var distance
         , maxRun
 
-      distance = Math.abs(tile1.x - tile2.x) + Math.abs(tile1.y - tile2.y)
-      maxRun = Math.max( _grid.verticalRunCount( tile1.x
-                                               , tile1.y
+      distance = Math.abs(tile1.x() - tile2.x()) +
+                 Math.abs(tile1.y() - tile2.y())
+      maxRun = Math.max( _grid.verticalRunCount( tile1.x()
+                                               , tile1.y()
                                                , tile2.type
                                                , tile1
                                                , tile2
                                                )
-                       , _grid.horizontalRunCount( tile1.x
-                                                 , tile1.y
+                       , _grid.horizontalRunCount( tile1.x()
+                                                 , tile1.y()
                                                  , tile2.type
                                                  , tile1
                                                  , tile2
                                                  )
-                       , _grid.verticalRunCount( tile2.x
-                                               , tile2.y
+                       , _grid.verticalRunCount( tile2.x()
+                                               , tile2.y()
                                                , tile1.type
                                                , tile1
                                                , tile2
                                                )
-                       , _grid.horizontalRunCount( tile2.x
-                                                 , tile2.y
+                       , _grid.horizontalRunCount( tile2.x()
+                                                 , tile2.y()
                                                  , tile1.type
                                                  , tile1
                                                  , tile2
@@ -182,45 +217,48 @@ function Game(n, types, animDuration) {
       if(_grid.swappingLocked()) return
 
       if(_grid.selectedTile && _grid.selectedTile === tile) {
-        _grid.selectedTile.selected(false)
+        _grid.selectedTile.deselect()
         _grid.selectedTile = null
       }
       else if(_grid.selectedTile) {
         if(_grid.isValidSwap(_grid.selectedTile, tile)) {
           _grid.swapTiles(_grid.selectedTile, tile)
-          _grid.selectedTile.selected(false)
+          _grid.selectedTile.deselect()
           _grid.selectedTile = null
         }
         else {
           tile.shake()
           _grid.selectedTile.shake()
-          _grid.selectedTile.selected(false)
+          _grid.selectedTile.deselect()
           _grid.selectedTile = null
         }
       }
       else {
         _grid.selectedTile = tile
-        tile.selected(true)
+        tile.select()
       }
     }
 
     this.swapTiles = function(tile1, tile2) {
-      var tmpx
-        , tmpy
-
-      _grid.columns[tile1.x].tiles.splice(tile1.y, 1, tile2)
-      _grid.columns[tile2.x].tiles.splice(tile2.y, 1, tile1)
-
-      // ugh
-      tmpx = tile1.x
-      tmpy = tile1.y
-      tile1.x = tile2.x
-      tile1.y = tile2.y
-      tile2.x = tmpx
-      tile2.y = tmpy
+      var tile1x = tile1.x()
+        , tile1y = tile1.y()
+        , tile2x = tile2.x()
+        , tile2y = tile2.y()
+      _grid.columns[tile1x].tiles.splice(tile1y, 1, tile2)
+      _grid.columns[tile2x].tiles.splice(tile2y, 1, tile1)
     }
 
-    this.findRuns = function() {
+    /* Computes if the board is full or not
+    */
+    this.fullBoard = ko.computed(function() {
+      return _grid.columns.map(function(c) {
+        return c.tiles().length
+      }).reduce(function(x, l){return x + l}) === n*n
+    })
+
+    /* Finds all runs on the board. Throttled to happen at most every 10 ms.
+    */
+    this.runs = ko.computed(function() {
       var tiles = []
         , x
         , y
@@ -252,17 +290,12 @@ function Game(n, types, animDuration) {
       }
 
       return _.unique(tiles)
-    }
+    }).extend({throttle: 10})
 
-    this.removeTiles = function(tiles) {
-      tiles.forEach(function(tile) {
-        _grid.columns[tile.x].tiles.splice(tile.y, 1)
-        _grid.columns[tile.x].tiles().forEach(function(tile, i) { tile.y = i })
-      })
-      return tiles.length
-    }
-
-    this.findPossibleMoves = function() {
+    /* Finds all valid moves on a board. Throttled to only happen at most every
+       one second.
+    */
+    this.moves = ko.computed(function() {
       var x
         , y
         , tile
@@ -289,22 +322,10 @@ function Game(n, types, animDuration) {
       }
 
       return moves
-    }
+    }).extend({throttle: 1000})
 
     this.hint = function() {
-      return _.sample(_grid.findPossibleMoves())
-    }
-
-    this.highlightTiles = function(tiles) {
-      tiles.forEach(function(tile) {
-        tile.highlighted(true)
-      })
-    }
-
-    this.bounceOutTiles = function(tiles) {
-      tiles.forEach(function(tile) {
-        tile.bounceOut(true)
-      })
+      return _.sample(_grid.moves())
     }
 
     this.clear = function() {
@@ -313,62 +334,55 @@ function Game(n, types, animDuration) {
       })
     }
 
-    this.fullBoard = ko.computed(function() {
-      return _grid.columns.map(function(c) {
-        return c.tiles().length
-      }).reduce(function(x, l){return x + l}) === n*n
-    })
-
+    /* If there are less than n tiles in a column, add a tile to that column.
+       This is throttled to only allow it to happen at most every 50 ms. This
+       gives us our nice "waterfall" effect when tiles fly in from above.
+    */
     ko.computed(function() {
       _grid.columns.forEach(function(column, i) {
         if(column.tiles().length < n) {
           window.setTimeout(function() { _grid.addTile(i) }, 0)
         }
       })
-    }).extend({throttle: 10})
+    }).extend({throttle: 50})
 
-    ko.computed(function() {
-      var tilesToRemove
-        , tilesRemoved
-
-      if(_grid.fullBoard()) {
-        tilesToRemove = _grid.findRuns()
-        if(tilesToRemove.length > 0) {
-          _grid.swappingLocked(true)
-          _grid.bounceOutTiles(tilesToRemove)
-          window.setTimeout(function() {
-            tilesRemoved = _grid.removeTiles(tilesToRemove)
-            _game.score(_game.score() + tilesRemoved)
-            _grid.swappingLocked(false)
-          }, animDuration)
-        }
+    /* When the `runs` computed updates, remove all tiles that are a part of any
+       runs.  Lock the board while tiles are being removed to prevent tile
+       swapping before tiles are done animating out.
+    */
+    this.runs.subscribe(function(runs) {
+      if(runs.length > 0) {
+        _game.score(_game.score() + runs.length)
+        _grid.swappingLocked(true)
+        runs.forEach(function(tile) {
+          tile.remove()
+        })
+        window.setTimeout(function() {
+          _grid.swappingLocked(false)
+        }, animDuration)
       }
-    }).extend({throttle: 20})
+    })
 
-    ko.computed(function() {
-      var possibleMoves = []
-
-      // if it's a full board
-      if(_grid.fullBoard()) {
-        possibleMoves = _grid.findPossibleMoves()
-
-        if(possibleMoves.length === 0) {
-          bootbox.dialog( { title: 'Game Over!'
-                          , message: 'There are no more moves available.  ' +
-                                    'Would you like to save your high score?'
-                          , buttons:
-                              { success:
-                                  { label: 'Yes'
-                                  , className: 'btn-success'
-                                  , callback: _game.saveScore
-                                  }
-                              , close: { label: 'No thanks' }
-                              }
-                          }
-                        )
-        }
+    /* When the `moves` computed updates, check if there are any moves left. If
+       not, notify the player and allow them to store their high score.
+    */
+    this.moves.subscribe(function(moves) {
+      if(moves.length === 0) {
+        bootbox.dialog( { title: 'Game Over!'
+                        , message: 'There are no more moves available.  ' +
+                                   'Would you like to save your high score?'
+                        , buttons:
+                            { success:
+                                { label: 'Yes'
+                                , className: 'btn-success'
+                                , callback: _game.saveScore
+                                }
+                            , close: { label: 'No thanks' }
+                            }
+                        }
+                      )
       }
-    }).extend({throttle: 500})
+    })
   }
 
   this.score = ko.observable(0)
@@ -384,10 +398,7 @@ function Game(n, types, animDuration) {
     }
 
     tile = _.sample(hint)
-    tile.highlighted(true)
-    window.setTimeout(function() {
-      tile.highlighted(false)
-    }, 1000)
+    tile.highlight()
   }
 
   this.newGame = function() {
